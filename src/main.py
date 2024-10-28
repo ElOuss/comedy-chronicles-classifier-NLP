@@ -1,10 +1,11 @@
 import click
 import joblib
 from sklearn.model_selection import cross_val_score
+from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
 
 from data import make_dataset
-from features import make_features
+from feature import make_features
 from models import make_model
 
 @click.group()
