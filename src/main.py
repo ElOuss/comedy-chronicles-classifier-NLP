@@ -3,6 +3,8 @@ import joblib
 from sklearn.model_selection import cross_val_score
 from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
+from sklearn.model_selection import GridSearchCV
+
 
 from data import make_dataset
 from feature import make_features
@@ -59,17 +61,26 @@ def evaluate(input_filename, model_type):
     df = make_dataset(input_filename, is_training=True)
     X, y, _ = make_features(df)  # Ignore the vectorizer here as it's not needed
 
-    # Initialize the model
-    model = make_model(model_type)
+    # Define the parameter grid for Random Forest
+    param_grid = {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [None, 10, 20, 30],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4]
+    }
 
-    # Perform 5-fold cross-validation
-    scores = cross_val_score(model, X, y, cv=5, scoring="accuracy")
-    
-    # Print the cross-validation results
-    print(f"Cross-validation accuracy scores: {scores}")
-    print(f"Mean accuracy: {scores.mean():.2f}")
-    print(f"Standard deviation: {scores.std():.2f}")
-    
+    # Initialize the model for tuning
+    rf_model = make_model(model_type)
+
+    # Set up GridSearchCV with 5-fold cross-validation
+    grid_search = GridSearchCV(estimator=rf_model, param_grid=param_grid, cv=5, scoring='accuracy', n_jobs=-1)
+    grid_search.fit(X, y)
+
+    # Output the best parameters and cross-validation score
+    print("Best parameters:", grid_search.best_params_)
+    print("Best cross-validation score:", grid_search.best_score_)
+    print("All cross-validation scores:", grid_search.cv_results_['mean_test_score'])
+
 cli.add_command(train)
 cli.add_command(predict)
 cli.add_command(evaluate)
