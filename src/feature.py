@@ -1,4 +1,4 @@
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 import nltk
@@ -6,7 +6,7 @@ import nltk
 # Download stopwords if not already available
 nltk.download('stopwords')
 
-def make_features(df):
+def make_features(df, use_tfidf=False):
     # Initialize the French Snowball Stemmer and NLTK French stop words list
     stemmer = SnowballStemmer("french")
     french_stop_words = stopwords.words("french")
@@ -16,12 +16,14 @@ def make_features(df):
         lambda text: ' '.join(stemmer.stem(word) for word in text.split())
     )
     
-    # Initialize CountVectorizer with NLTK stop words and document frequency limits
-    vectorizer = CountVectorizer(
+    # Choose the vectorizer based on the use_tfidf flag
+    vectorizer_class = TfidfVectorizer if use_tfidf else CountVectorizer
+    vectorizer = vectorizer_class(
         lowercase=True, 
-        stop_words=french_stop_words,  # Using comprehensive French stop words
-        max_df=0.95,  # Tuning to ignore very common terms
-        min_df=2      # Tuning to ignore rare terms
+        stop_words=french_stop_words,
+        max_df=0.95,
+        min_df=2,
+        ngram_range=(1, 2)  # Adding bigrams to capture more context
     )
     
     # Transform the video names and get the labels
@@ -29,5 +31,3 @@ def make_features(df):
     y = df["is_comic"]
 
     return X, y, vectorizer
-
-
