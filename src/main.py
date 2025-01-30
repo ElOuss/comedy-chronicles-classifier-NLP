@@ -1,6 +1,6 @@
 import click
 import joblib
-from sklearn.model_selection import cross_val_score, GridSearchCV
+from sklearn.model_selection import cross_val_score,train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import pandas as pd
 import logging
